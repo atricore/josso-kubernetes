@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+secretGenerator:
+  - name: josso-secrets
+    envs:
+    - secrets/secrets.txt
+
+resources:
+  - server/josso-dep.yaml
+  - server/josso-svc.yaml
