@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: josso-console-svc
+  labels:
+    app: josso-console
+spec:
+  type: ClusterIP
+  selector:
+    app: josso-console
+  ports:
+    - name: http-console-ports
+      port: 8082
+      targetPort: 8082
+      protocol: TCP
+

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+# TODO : persistent volume for atricore-wb config
+metadata:
+  name: josso-console
+  labels:
+    app: josso-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: josso-console
+  template:
+    metadata:
+      labels:
+        app: josso-console
+    spec:
+      containers:
+        - name: josso-console-container
+          image: ghcr.io/atricore/josso-console:2.6.3-unstable
+          ports:
+            - containerPort: 8082

@@ -9,3 +9,5 @@ secretGenerator:
 resources:
   - server/josso-dep.yaml
   - server/josso-svc.yaml
+  - console/console-dep.yaml
+  - console/console-svc.yaml
