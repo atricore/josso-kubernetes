@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 # TODO : persistent volume for atricore-wb config
 metadata:
   name: josso-console
@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
         - name: josso-console-container
-          image: ghcr.io/atricore/josso-console:2.6.3-unstable
+          image: ghcr.io/atricore/josso-console:2.6.3-2
           ports:
             - containerPort: 8082
