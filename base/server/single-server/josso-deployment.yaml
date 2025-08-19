@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: josso-server
+  labels:
+    app: josso-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: josso-server
+  template:
+    metadata:
+      labels:
+        app: josso-server
+    spec:
+      containers:
+        - name: josso-server-container
+          image: ghcr.io/atricore/josso-ee:2.6.3-2
+          ports:
+            - containerPort: 8081
+          env:
+            - name: JOSSO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: josso_client_id
+                  name: josso-secrets
+            - name: JOSSO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: josso_client_secret
+                  name: josso-secrets
+            - name: JOSSO_ADMIN_USR
+              valueFrom:
+                secretKeyRef:
+                  key: josso_admin_usr
+                  name: josso-secrets
+            - name: JOSSO_ADMIN_PWD
+              valueFrom:
+                secretKeyRef:
+                  key: josso_admin_pwd
+                  name: josso-secrets
+            - name: JOSSO_SKIP_ADMIN_CREATE
+              value: "false"
+            - name: JOSSO_BINDING_HTTP_FOLLOWREDIRECTS
+              value: "false"
+            - name: KARAF_DEBUG
+              value: "true"

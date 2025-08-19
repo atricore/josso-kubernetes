@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: josso-peer-discovery
+data:
+  discover-peers.sh: |
+    #!/bin/sh
+    set -e
+    
+    # Configuration
+    SERVICE_NAME=${JOSSO_SERVICE_NAME:-"josso-server-headless"}
+    NAMESPACE=${POD_NAMESPACE:-"default"}
+    REPLICATION_PORT="40001"  # Fixed port for JOSSO peer replication
+    STATEFULSET_NAME=${STATEFULSET_NAME:-"josso-server"}
+    
+    echo "Starting peer discovery for service: $SERVICE_NAME in namespace: $NAMESPACE"
+    echo "Looking for StatefulSet pods: $STATEFULSET_NAME"
+    echo "Using replication port: $REPLICATION_PORT"
+    
+    # Initialize peers list
+    JOSSO_PEERS=""
+    
+    # For StatefulSets, we should discover pods by trying individual pod hostnames
+    # since the headless service DNS returns all pod IPs, but we want hostnames
+    echo "Discovering StatefulSet pod hostnames..."
+    
+    for i in $(seq 0 9); do
+        POD_HOSTNAME="$STATEFULSET_NAME-$i.$SERVICE_NAME.$NAMESPACE.svc.cluster.local"
+        echo "Checking pod hostname: $POD_HOSTNAME"
+        
+        # Try to resolve the pod hostname - if it resolves, the pod exists
+        IP=$(nslookup $POD_HOSTNAME 2>/dev/null | grep "^Address:" | grep -v "#" | tail -1 | awk '{print $2}' || true)
+        
+        if [ ! -z "$IP" ]; then
+            echo "Found active pod: $POD_HOSTNAME (IP: $IP)"
+            if [ -z "$JOSSO_PEERS" ]; then
+                JOSSO_PEERS="$POD_HOSTNAME:$REPLICATION_PORT"
+            else
+                JOSSO_PEERS="$JOSSO_PEERS,$POD_HOSTNAME:$REPLICATION_PORT"
+            fi
+        else
+            echo "Pod $POD_HOSTNAME not found or not ready"
+        fi
+    done
+    
+    if [ -z "$JOSSO_PEERS" ]; then
+        echo "WARNING: No peers discovered! This might be the first pod starting."
+        JOSSO_PEERS=""
+    fi
+    
+    echo "Final discovered peers: $JOSSO_PEERS"
+    
+    # Write the environment variable to shared volume
+    echo "export JOSSO_PEERS=\"$JOSSO_PEERS\"" > /shared/peer-config.env
+    echo "Peer discovery complete. Configuration written to /shared/peer-config.env"
+    
+    # Debug: show what was written
+    echo "Contents of peer-config.env:"
+    cat /shared/peer-config.env

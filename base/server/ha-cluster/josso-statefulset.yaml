@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: josso-server
   labels:
     app: josso-server
 spec:
-  replicas: 1
+  serviceName: josso-server-headless
+  replicas: 3
   selector:
     matchLabels:
       app: josso-server
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: josso-server-container
-          image: ghcr.io/atricore/josso-ee:2.6.3-2
+          image: ghcr.io/atricore/josso-ee:2.6.3-4
           ports:
             - containerPort: 8081
           env:
@@ -46,3 +47,23 @@ spec:
               value: "false"
             - name: KARAF_DEBUG
               value: "true"
+            - name: JOSSO_PORT
+              value: "8081"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: shared-config
+              mountPath: /shared
+      volumes:
+        - name: peer-discovery-script
+          configMap:
+            name: josso-peer-discovery
+            defaultMode: 0755
+        - name: shared-config
+          emptyDir: {}
