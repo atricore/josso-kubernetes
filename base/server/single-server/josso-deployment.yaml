@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: josso-server-container
-          image: ghcr.io/atricore/josso-ee:2.6.3-9
+          image: ghcr.io/atricore/josso-ee:2.6.3-10
           ports:
             - containerPort: 8081
           env:

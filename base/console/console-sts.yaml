@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
         - name: josso-console-container
-          image: ghcr.io/atricore/josso-console:2.6.3-2
+          image: ghcr.io/atricore/josso-console:2.6.3-4
           ports:
             - containerPort: 8082
